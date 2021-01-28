@@ -1717,7 +1717,7 @@ void update_pvt_tbl_by_doe(void)
 void cpuhvfs_pvt_tbl_create(void)
 {
 	int i;
-	unsigned int lv = _mt_cpufreq_get_cpu_level();
+	unsigned int lv = CPU_LEVEL_0;
 #ifdef IMAX_ENABLE
 	unsigned int imax_state = IMAX_INIT_STATE;
 #ifdef ENABLE_DOE
@@ -1729,6 +1729,7 @@ void cpuhvfs_pvt_tbl_create(void)
 	int j;
 #endif
 
+	lv = _mt_cpufreq_get_cpu_level();
 	recordRef = ioremap_nocache(DBG_REPO_TBL_S, PVT_TBL_SIZE);
 	tag_pr_info("DVFS - @(Record)%s----->(%p)\n", __func__, recordRef);
 	memset_io((u8 *)recordRef, 0x00, PVT_TBL_SIZE);
