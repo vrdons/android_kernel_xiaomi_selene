@@ -200,7 +200,7 @@ int Ripi_cpu_dvfs_thread(void *data)
 
 	int previous_limit = -1;
 	int previous_base = -1;
-	int num_log;
+	unsigned int num_log;
 	unsigned int buf[ENTRY_EACH_LOG] = {0};
 	unsigned int bk_log_offs;
 	unsigned int buf_freq;
@@ -297,6 +297,9 @@ int Ripi_cpu_dvfs_thread(void *data)
 			parse_log_content(buf, num_log);
 			num_log++;
 		}
+
+		if (num_log > MAX_LOG_FETCH)
+			num_log = MAX_LOG_FETCH;
 
 		cpufreq_lock(flags);
 		for_each_cpu_dvfs_only(i, p) {
