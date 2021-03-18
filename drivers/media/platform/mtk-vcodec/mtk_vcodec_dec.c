@@ -531,6 +531,7 @@ int mtk_vdec_put_fb(struct mtk_vcodec_ctx *ctx, int type)
 			dst_buf_info = container_of(dst_vb2_v4l2,
 				struct mtk_video_dec_buf, vb);
 
+			dst_buf_info->used = false;
 			dst_buf_info->vb.vb2_buf.timestamp = 0;
 			memset(&dst_buf_info->vb.timecode, 0, sizeof(struct v4l2_timecode));
 			dst_vb2_v4l2->flags |= V4L2_BUF_FLAG_LAST;
