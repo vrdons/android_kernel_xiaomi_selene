@@ -878,7 +878,7 @@ static int __init fpsgo_init(void)
 	fpsgo_composer_init();
 	fpsgo_uboost_init();
 
-	fpsgo_switch_enable(1);
+	//fpsgo_switch_enable(1);
 
 #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
 	cpufreq_notifier_fp = fpsgo_notify_cpufreq;
