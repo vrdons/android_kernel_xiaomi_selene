@@ -2531,6 +2531,7 @@ static void vb2ops_vdec_stop_streaming(struct vb2_queue *q)
 
 	ctx->input_max_ts = 0;
 
+	ctx->dec_flush_buf->lastframe = NON_EOS;
 	if (q->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE) {
 		if (ctx->state >= MTK_STATE_HEADER) {
 			src_buf = v4l2_m2m_next_src_buf(ctx->m2m_ctx);
