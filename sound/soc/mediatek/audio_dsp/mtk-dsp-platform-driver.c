@@ -901,6 +901,14 @@ SYNC_READINDEX:
 	if (dsp_mem->adsp_xrun_flag)
 		return -1;
 
+	/* handle for underflow */
+	if (dsp_mem->underflowed) {
+		pr_info("%s id = %d return -1 because underflowed[%d]\n",
+			__func__, id, dsp_mem->underflowed);
+		dsp_mem->underflowed = 0;
+		spin_unlock_irqrestore(&dsp_ringbuf_lock, flags);
+		return -1;
+
 	spin_lock(ringbuf_lock);
 	pcm_ptr_bytes = (int)(dsp_mem->ring_buf.pRead -
 			      dsp_mem->ring_buf.pBufBase);
@@ -1780,7 +1788,7 @@ static int mtk_dsp_probe(struct snd_soc_platform *platform)
 
 	for (id = 0; id < ADSP_CORE_TOTAL; id++) {
 		if (adsp_irq_registration(id, ADSP_IRQ_AUDIO_ID, audio_irq_handler, dsp) < 0)
-			pr_info("%s, ADSP_IRQ_AUDIO not supported\n");
+			pr_info("%s, ADSP_IRQ_AUDIO not supported\n", __func__);
 	}
 
 	adsp_register_notify(&adsp_audio_notifier);
