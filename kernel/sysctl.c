@@ -1392,6 +1392,7 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= proc_dointvec,
 	},
 #endif
+#if !defined(CONFIG_DISABLE_OOM_KILLER)
 	{
 		.procname	= "panic_on_oom",
 		.data		= &sysctl_panic_on_oom,
@@ -1415,6 +1416,7 @@ static struct ctl_table vm_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#endif
 	{
 		.procname	= "overcommit_ratio",
 		.data		= &sysctl_overcommit_ratio,
