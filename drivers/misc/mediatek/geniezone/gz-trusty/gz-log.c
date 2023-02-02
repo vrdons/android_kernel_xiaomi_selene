@@ -785,7 +785,7 @@ static int trusty_gz_log_probe(struct platform_device *pdev)
 	if (glctx.flag == DYNAMIC) {
 		ret = trusty_std_call32(gls->trusty_dev,
 			MTEE_SMCNR(SMCF_SC_SHARED_LOG_ADD, gls->trusty_dev),
-			(u32)(glctx.paddr), (u32)((u64)glctx.paddr >> 32),
+			(u32)(glctx.paddr), (u32)((u64)(0xFFFFFFFF00000000 & glctx.paddr) >> 32),
 			glctx.size);
 		if (ret < 0) {
 			dev_info(&pdev->dev,
@@ -908,7 +908,8 @@ error_callback_notifier:
 #endif
 	trusty_std_call32(gls->trusty_dev,
 			  MTEE_SMCNR(SMCF_SC_SHARED_LOG_RM, gls->trusty_dev),
-			  (u32)glctx.paddr, (u32)((u64)glctx.paddr >> 32), 0);
+			  (u32)glctx.paddr, (u32)((u64)(0xFFFFFFFF00000000 & glctx.paddr) >> 32),
+			  0);
 error_std_call:
 	if (glctx.flag == STATIC_NOMAP)
 		memunmap(glctx.virt);
@@ -944,7 +945,7 @@ static int trusty_gz_log_remove(struct platform_device *pdev)
 
 	ret = trusty_std_call32(gls->trusty_dev,
 			MTEE_SMCNR(SMCF_SC_SHARED_LOG_RM, gls->trusty_dev),
-			(u32)glctx.paddr, (u32)((u64)glctx.paddr >> 32), 0);
+			(u32)glctx.paddr, (u32)((u64)(0xFFFFFFFF00000000 & glctx.paddr) >> 32), 0);
 	if (ret)
 		pr_info("std call(GZ_SHARED_LOG_RM) failed: %d\n", ret);
 
