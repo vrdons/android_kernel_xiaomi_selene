@@ -27,7 +27,6 @@ PCBA_CONFIG huaqin_pcba_config = PCBA_UNKNOW;
 
 //extern char *saved_command_line;
 extern int IMM_GetOneChannelValue(int dwChannel, int data[4], int *rawdata);
-static bool read_pcba_config(void);
 /*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 start*/
 int hq_selene_pcba_config;
 /*K19A HQ-124114 K19A charger of jeita by wangqi at 2021/4/16 end*/
