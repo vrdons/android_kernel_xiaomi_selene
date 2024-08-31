@@ -4133,7 +4133,6 @@ int execute_online_tuning_hs200(struct msdc_host *host, u8 *res)
 	ret = autok_send_tune_cmd(host, 13, TUNE_CMD, &autok_host_para);
 	if (ret == E_RES_PASS) {
 		response = MSDC_READ32(SDC_RESP0);
-		AUTOK_RAWPRINT("[AUTOK]dev status 0x%08x\r\n", response);
 	} else
 		AUTOK_RAWPRINT("[AUTOK]CMD err while check dev status\r\n");
 	opcode = MMC_SEND_TUNING_BLOCK_HS200;
@@ -6400,8 +6399,6 @@ end:
 int autok_sdio30_plus_tuning(struct msdc_host *host, u8 *res)
 {
 	int ret = 0;
-	struct timeval tm_s, tm_e;
-	unsigned int tm_val = 0;
 	unsigned int clk_pwdn = 0;
 	unsigned int int_en = 0;
 	void __iomem *base = host->base;
@@ -6411,8 +6408,6 @@ int autok_sdio30_plus_tuning(struct msdc_host *host, u8 *res)
 	unsigned int dvfs_en = 0;
 	unsigned int dvfs_hw = 0;
 	unsigned int dtoc = 0;
-
-	do_gettimeofday(&tm_s);
 
 	int_en = MSDC_READ32(MSDC_INTEN);
 	MSDC_WRITE32(MSDC_INTEN, 0);
@@ -6457,11 +6452,6 @@ int autok_sdio30_plus_tuning(struct msdc_host *host, u8 *res)
 	MSDC_SET_FIELD(MSDC_CFG, MSDC_CFG_DVFS_HW, dvfs_hw);
 	MSDC_SET_FIELD(SDC_CFG, SDC_CFG_DTOC, dtoc);
 
-	do_gettimeofday(&tm_e);
-	tm_val = (tm_e.tv_sec - tm_s.tv_sec) * 1000
-		+ (tm_e.tv_usec - tm_s.tv_usec) / 1000;
-	AUTOK_RAWPRINT("[AUTOK]======Cost:%d ms======\r\n", tm_val);
-
 	return ret;
 }
 EXPORT_SYMBOL(autok_sdio30_plus_tuning);
@@ -6469,8 +6459,6 @@ EXPORT_SYMBOL(autok_sdio30_plus_tuning);
 int autok_execute_tuning(struct msdc_host *host, u8 *res)
 {
 	int ret = 0;
-	struct timeval tm_s, tm_e;
-	unsigned int tm_val = 0;
 	unsigned int clk_pwdn = 0;
 	unsigned int int_en = 0;
 	void __iomem *base = host->base;
@@ -6480,8 +6468,6 @@ int autok_execute_tuning(struct msdc_host *host, u8 *res)
 	unsigned int dvfs_en = 0;
 	unsigned int dvfs_hw = 0;
 	unsigned int dtoc = 0;
-
-	do_gettimeofday(&tm_s);
 
 	int_en = MSDC_READ32(MSDC_INTEN);
 	MSDC_WRITE32(MSDC_INTEN, 0);
@@ -6523,11 +6509,6 @@ int autok_execute_tuning(struct msdc_host *host, u8 *res)
 	MSDC_SET_FIELD(MSDC_CFG, MSDC_CFG_DVFS_HW, dvfs_hw);
 	MSDC_SET_FIELD(SDC_CFG, SDC_CFG_DTOC, dtoc);
 
-	do_gettimeofday(&tm_e);
-	tm_val = (tm_e.tv_sec - tm_s.tv_sec) * 1000
-		+ (tm_e.tv_usec - tm_s.tv_usec) / 1000;
-	AUTOK_RAWPRINT("[AUTOK]======Cost:%d ms======\r\n", tm_val);
-
 	return ret;
 }
 EXPORT_SYMBOL(autok_execute_tuning);
@@ -6535,8 +6516,6 @@ EXPORT_SYMBOL(autok_execute_tuning);
 int hs400_execute_tuning(struct msdc_host *host, u8 *res)
 {
 	int ret = 0;
-	struct timeval tm_s, tm_e;
-	unsigned int tm_val = 0;
 	unsigned int clk_pwdn = 0;
 	unsigned int int_en = 0;
 	void __iomem *base = host->base;
@@ -6544,7 +6523,6 @@ int hs400_execute_tuning(struct msdc_host *host, u8 *res)
 	unsigned int i = 0;
 	unsigned int value = 0;
 
-	do_gettimeofday(&tm_s);
 	int_en = MSDC_READ32(MSDC_INTEN);
 	MSDC_WRITE32(MSDC_INTEN, 0);
 	MSDC_GET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
@@ -6576,11 +6554,6 @@ int hs400_execute_tuning(struct msdc_host *host, u8 *res)
 	MSDC_WRITE32(MSDC_INTEN, int_en);
 	MSDC_SET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
 
-	do_gettimeofday(&tm_e);
-	tm_val = (tm_e.tv_sec - tm_s.tv_sec) * 1000
-		+ (tm_e.tv_usec - tm_s.tv_usec) / 1000;
-	AUTOK_RAWPRINT("[AUTOK][HS400]======Cost:%d ms======\r\n", tm_val);
-
 	return ret;
 }
 EXPORT_SYMBOL(hs400_execute_tuning);
@@ -6588,13 +6561,10 @@ EXPORT_SYMBOL(hs400_execute_tuning);
 int hs400_execute_tuning_cmd(struct msdc_host *host, u8 *res)
 {
 	int ret = 0;
-	struct timeval tm_s, tm_e;
-	unsigned int tm_val = 0;
 	unsigned int clk_pwdn = 0;
 	unsigned int int_en = 0;
 	void __iomem *base = host->base;
 
-	do_gettimeofday(&tm_s);
 	int_en = MSDC_READ32(MSDC_INTEN);
 	MSDC_WRITE32(MSDC_INTEN, 0);
 	MSDC_GET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
@@ -6608,11 +6578,6 @@ int hs400_execute_tuning_cmd(struct msdc_host *host, u8 *res)
 	MSDC_WRITE32(MSDC_INTEN, int_en);
 	MSDC_SET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
 
-	do_gettimeofday(&tm_e);
-	tm_val = (tm_e.tv_sec - tm_s.tv_sec) * 1000
-		+ (tm_e.tv_usec - tm_s.tv_usec) / 1000;
-	AUTOK_RAWPRINT("[AUTOK][HS400 cmd]======Cost:%d ms======\r\n", tm_val);
-
 	return ret;
 }
 EXPORT_SYMBOL(hs400_execute_tuning_cmd);
@@ -6620,8 +6585,6 @@ EXPORT_SYMBOL(hs400_execute_tuning_cmd);
 int hs200_execute_tuning(struct msdc_host *host, u8 *res)
 {
 	int ret = 0;
-	struct timeval tm_s, tm_e;
-	unsigned int tm_val = 0;
 	unsigned int clk_pwdn = 0;
 	unsigned int int_en = 0;
 	void __iomem *base = host->base;
@@ -6634,7 +6597,6 @@ int hs200_execute_tuning(struct msdc_host *host, u8 *res)
 
 	memset(&platform_para_func, 0, sizeof(struct AUTOK_PLAT_FUNC));
 	get_platform_func(platform_para_func);
-	do_gettimeofday(&tm_s);
 	int_en = MSDC_READ32(MSDC_INTEN);
 	MSDC_WRITE32(MSDC_INTEN, 0);
 	MSDC_GET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
@@ -6678,11 +6640,6 @@ int hs200_execute_tuning(struct msdc_host *host, u8 *res)
 	MSDC_SET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
 	MSDC_SET_FIELD(SDC_CFG, SDC_CFG_DTOC, dtoc);
 
-	do_gettimeofday(&tm_e);
-	tm_val = (tm_e.tv_sec - tm_s.tv_sec) * 1000
-		+ (tm_e.tv_usec - tm_s.tv_usec) / 1000;
-	AUTOK_RAWPRINT("[AUTOK][HS200]======Cost:%d ms======\r\n", tm_val);
-
 	return ret;
 }
 EXPORT_SYMBOL(hs200_execute_tuning);
@@ -6690,13 +6647,10 @@ EXPORT_SYMBOL(hs200_execute_tuning);
 int hs200_execute_tuning_cmd(struct msdc_host *host, u8 *res)
 {
 	int ret = 0;
-	struct timeval tm_s, tm_e;
-	unsigned int tm_val = 0;
 	unsigned int clk_pwdn = 0;
 	unsigned int int_en = 0;
 	void __iomem *base = host->base;
 
-	do_gettimeofday(&tm_s);
 	int_en = MSDC_READ32(MSDC_INTEN);
 	MSDC_WRITE32(MSDC_INTEN, 0);
 	MSDC_GET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
@@ -6710,11 +6664,6 @@ int hs200_execute_tuning_cmd(struct msdc_host *host, u8 *res)
 	MSDC_WRITE32(MSDC_INTEN, int_en);
 	MSDC_SET_FIELD(MSDC_CFG, MSDC_CFG_CKPDN, clk_pwdn);
 
-	do_gettimeofday(&tm_e);
-	tm_val = (tm_e.tv_sec - tm_s.tv_sec) * 1000
-		+ (tm_e.tv_usec - tm_s.tv_usec) / 1000;
-	AUTOK_RAWPRINT("[AUTOK][HS200 cmd]======Cost:%d ms======\r\n", tm_val);
-
 	return ret;
 }
 EXPORT_SYMBOL(hs200_execute_tuning_cmd);
@@ -6723,8 +6672,6 @@ int autok_vcore_merge_sel(struct msdc_host *host, unsigned int merge_cap)
 {
 	void __iomem *base = host->base;
 	unsigned int ret = 0;
-	struct timeval tm_s, tm_e;
-	unsigned int tm_val = 0;
 	unsigned int uCmdEdge = 0;
 	unsigned int uDatEdge = 0;
 	u64 RawData64 = 0LL;
@@ -6739,7 +6686,6 @@ int autok_vcore_merge_sel(struct msdc_host *host, unsigned int merge_cap)
 	unsigned int data_dly = 0;
 	unsigned int clk_mode = 0;
 
-	do_gettimeofday(&tm_s);
 	MSDC_GET_FIELD(MSDC_CFG, MSDC_CFG_CKMOD, clk_mode);
 
 	pInfo = kmalloc(sizeof(struct AUTOK_REF_INFO_NEW), GFP_ATOMIC);
@@ -7006,11 +6952,6 @@ host_data_tx_merge:
 	AUTOK_DBGPRINT(AUTOK_DBG_RES, "[AUTOK]dat tx = %d\r\n", data_dly);
 
 end:
-	do_gettimeofday(&tm_e);
-	tm_val = (tm_e.tv_sec - tm_s.tv_sec) * 1000
-		+ (tm_e.tv_usec - tm_s.tv_usec) / 1000;
-	AUTOK_RAWPRINT("[AUTOK][merge]======Time Cost:%d ms======\r\n", tm_val);
-
 	kfree(pInfo);
 	return ret;
 fail:
