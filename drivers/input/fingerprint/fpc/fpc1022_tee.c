@@ -489,21 +489,21 @@ static irqreturn_t fpc1022_irq_handler(int irq, void *handle)
 
 	/* Make sure 'wakeup_enabled' is updated before using it
 	 ** since this is interrupt context (other thread...) */
-	printk("fpc1022_irq_handler");
+	pr_debug("fpc1022_irq_handler");
 	smp_rmb();
 
 	/* if (fpc1022->wakeup_enabled) { */
 	__pm_wakeup_event(fpc1022->ttw_wl, msecs_to_jiffies(FPC_TTW_HOLD_TIME));
 	/* } */
 
-	/* K19A code for HQ-145238 by shicheng at 2021.7.12 start */
-	printk("%s fastScreenOn wait_finger_down = %d, fb_black = %d \n", __func__,
+	/* begin modify for unlock speed */
+	pr_debug("%s fastScreenOn wait_finger_down = %d, fb_black = %d \n", __func__,
 			fpc1022->wait_finger_down, fpc1022->fb_black);
 	if (fpc1022->wait_finger_down && fpc1022->fb_black) {
 			fpc1022->wait_finger_down = false;
 			schedule_work(&fpc1022->work);
 	}
-	/* K19A code for HQ-145238 by shicheng at 2021.7.12 end */
+	/* end modify for unlock speed */
 
 	sysfs_notify(&fpc1022->dev->kobj, NULL, dev_attr_irq.attr.name);
 
