@@ -24,12 +24,14 @@
 struct ktd3137_chip *bkl_chip;
 int ktd_hbm_mode;
 
-#define KTD_DEBUG
+#define KTD_DEBUG 0
 
 #ifdef KTD_DEBUG
 #define LOG_DBG(format, args...) do { \
 	pr_debug("[ktd]"format"\n", ##args);\
 } while (0)
+#else
+#define LOG_DBG(format, args...) ((void)0)
 #endif
 
 int ktd3137_brightness_table_reg4[256] = {0x01, 0x02, 0x04, 0x04, 0x07,
