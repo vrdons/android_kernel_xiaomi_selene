@@ -1237,10 +1237,9 @@ void dlpt_notify_init(void)
 
 	dlpt_notify_thread = kthread_run(dlpt_notify_handler, 0,
 		"dlpt_notify_thread");
-	if (IS_ERR(dlpt_notify_thread))
-		pr_debug("Failed to create dlpt_notify_thread\n");
-	else
-		pr_debug("Create dlpt_notify_thread : done\n");
+	if (!dlpt_notify_thread) {
+		pr_notice("Failed to create dlpt_notify_thread\n");
+	}
 }
 
 #else
