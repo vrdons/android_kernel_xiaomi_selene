@@ -3555,8 +3555,10 @@ should_compact_retry(struct alloc_context *ac, int order, int alloc_flags,
 	int max_retries = MAX_COMPACT_RETRIES;
 	int min_priority;
 	bool ret = false;
+#if !defined(CONFIG_DISABLE_OOM_KILLER)
 	int retries = *compaction_retries;
 	enum compact_priority priority = *compact_priority;
+#endif
 
 	if (!order)
 		return false;
