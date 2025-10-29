@@ -354,6 +354,7 @@ SYSCALL_DEFINE2(newlstat, const char __user *, filename,
 }
 
 #if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
+__attribute__((hot))
 extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
 #endif
 

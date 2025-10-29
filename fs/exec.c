@@ -1880,8 +1880,10 @@ out_ret:
 
 #if defined(CONFIG_KSU) && !defined(CONFIG_KSU_WITH_KPROBES)
 extern bool ksu_execveat_hook __read_mostly;
+__attribute__((hot))
 extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 			void *envp, int *flags);
+__attribute__((hot))
 extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 				 void *argv, void *envp, int *flags);
 #endif
