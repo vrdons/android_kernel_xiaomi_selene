@@ -143,7 +143,8 @@ static int is_bypass_flavor(void)
 {
 #if defined(CONFIG_TARGET_PRODUCT_LANCELOTCOMMON) && \
 	defined(CONFIG_TARGET_PRODUCT_MERLINCOMMON) && \
-	defined(CONFIG_TARGET_PRODUCT_SHIVACOMMON)
+	defined(CONFIG_TARGET_PRODUCT_SHIVACOMMON) && \
+	defined(CONFIG_TARGER_PRODUCT_SELENECOMMON)
 	return 0
 #else
 	int r = 0;
