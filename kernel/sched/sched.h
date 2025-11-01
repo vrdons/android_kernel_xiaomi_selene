@@ -42,6 +42,8 @@
 #include "cpudeadline.h"
 #include "cpuacct.h"
 
+#define SCHED_FEAT_TTWU_QUEUE 0
+
 #ifdef CONFIG_SCHED_DEBUG
 # define SCHED_WARN_ON(x)	WARN_ONCE(x, #x)
 #else
