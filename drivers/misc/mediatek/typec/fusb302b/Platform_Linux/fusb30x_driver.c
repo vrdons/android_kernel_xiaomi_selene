@@ -292,7 +292,7 @@ static void fusb30x_reset_delay_work(struct work_struct *work)
 	if (!usb_psy) {
 		pr_info("FUSB - %s Could not get charger power_supply, defer probe\n",
 			__func__);
-		schedule_delayed_work(delayed_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, delayed_work, msecs_to_jiffies(1000));
 		return;
 	}
 #endif
@@ -300,20 +300,20 @@ static void fusb30x_reset_delay_work(struct work_struct *work)
 	if (!usb_psy) {
 		pr_info("FUSB - %s Could not get battery power_supply, defer probe\n",
 			__func__);
-		schedule_delayed_work(delayed_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, delayed_work, msecs_to_jiffies(1000));
 		return;
 	}
 	usb_psy = power_supply_get_by_name("usb");
 	if (!usb_psy) {
 		pr_info("FUSB - %s Could not get USB power_supply, defer probe\n",
 			__func__);
-		schedule_delayed_work(delayed_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, delayed_work, msecs_to_jiffies(1000));
 		return;
 	}
 #if 0
 	if (!chip->chg1_consumer->cm) {
 		pr_info("charger cm is not ready, wait\n");
-		schedule_delayed_work(delayed_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, delayed_work, msecs_to_jiffies(1000));
 		return;
 	}
 #endif
@@ -532,7 +532,7 @@ static int fusb30x_probe (struct i2c_client* client,
 #endif
 
 	INIT_DELAYED_WORK(&chip->reset_delay_work, fusb30x_reset_delay_work);
-	schedule_delayed_work(&chip->reset_delay_work, msecs_to_jiffies(1000));
+	queue_delayed_work(system_power_efficient_wq, &chip->reset_delay_work, msecs_to_jiffies(1000));
 	//chip->chg1_consumer = charger_manager_get_by_name(&client->dev, "charger_port1");
 
     dev_info(&client->dev, "FUSB  %s - FUSB30X Driver loaded successfully!\n", __func__);
