@@ -2162,7 +2162,7 @@ void ged_dvfs_reset_opp_cost(int oppsize)
 
 	if (g_aOppStat && oppsize > 0 && oppsize <= mt_gpufreq_get_dvfs_table_num()) {
 		for (i = 0; i < oppsize; i++) {
-			if (g_aOppStat[i].aTransition) {
+			if (g_aOppStat[i].uMem.aTrans) {
 				g_aOppStat[i].ui64Active = 0;
 				g_aOppStat[i].ui64Idle = 0;
 				memset(g_aOppStat[i].uMem.aTrans,
