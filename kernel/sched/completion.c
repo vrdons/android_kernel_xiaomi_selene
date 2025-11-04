@@ -117,7 +117,7 @@ __wait_for_common(struct completion *x,
 	return timeout;
 }
 
-static long __sched
+long __sched
 wait_for_common(struct completion *x, long timeout, int state)
 {
 	return __wait_for_common(x, schedule_timeout, timeout, state);
