@@ -38,7 +38,6 @@
 #include "mt_emi_api.h"
 #endif
 
-static unsigned int lp4x_highfreq_3600;
 static unsigned int lp4_highest_freq;
 
 void __iomem *DRAMC_AO_CHA_BASE_ADDR;
@@ -144,15 +143,6 @@ int enter_pasr_dpd_config(unsigned char segment_rank0,
 				u4rg_60 = IOMEM(DRAMC_AO_CHB_BASE_ADDR + 0x60);
 				u4rg_88 = IOMEM(DRAMC_NAO_CHB_BASE_ADDR + 0x88);
 			}
-		} else if (DRAM_TYPE == TYPE_LPDDR3) {
-			if (iChannelIdx == 1)
-				break;
-			u4rg_24 = IOMEM(DRAMC_AO_CHA_BASE_ADDR + 0x24);
-			u4rg_64 = IOMEM(DRAMC_AO_CHA_BASE_ADDR + 0x64);
-			u4rg_38 = IOMEM(DRAMC_AO_CHA_BASE_ADDR + 0x38);
-			u4rg_5C = IOMEM(DRAMC_AO_CHA_BASE_ADDR + 0x5C);
-			u4rg_60 = IOMEM(DRAMC_AO_CHA_BASE_ADDR + 0x60);
-			u4rg_88 = IOMEM(DRAMC_NAO_CHA_BASE_ADDR + 0x88);
 		} else {
 			break;
 		}
@@ -670,7 +660,7 @@ unsigned int get_dram_data_rate(void)
 	 *	u4SDM_PCW, u4PREDIV, u4POSDIV, u4CKDIV4, u4DataRate);
 	 */
 
-	if (DRAM_TYPE == TYPE_LPDDR3) {
+	/* if (DRAM_TYPE == TYPE_LPDDR3) {
 		if (u4DataRate == 1859)
 			u4DataRate = 1866;
 		else if (u4DataRate == 1599)
@@ -681,7 +671,7 @@ unsigned int get_dram_data_rate(void)
 			u4DataRate = 1200;
 		else
 			u4DataRate = 0;
-	} else if ((DRAM_TYPE == TYPE_LPDDR4) || (DRAM_TYPE == TYPE_LPDDR4X)) {
+	} else */ if ((DRAM_TYPE == TYPE_LPDDR4) || (DRAM_TYPE == TYPE_LPDDR4X)) {
 		if (u4DataRate == 3588)
 			u4DataRate = 3600;
 		else if (u4DataRate == 3198)
@@ -741,24 +731,24 @@ int dram_steps_freq(unsigned int step)
 
 	switch (step) {
 	case 0:
-		if (DRAM_TYPE == TYPE_LPDDR3)
+		/* if (DRAM_TYPE == TYPE_LPDDR3)
 			freq = 1866;
-		else if (DRAM_TYPE == TYPE_LPDDR4X)
-			freq = (lp4x_highfreq_3600) ? 3600 : 3200;
+		else */ if (DRAM_TYPE == TYPE_LPDDR4X)
+			freq = 3600;
 		else if (DRAM_TYPE == TYPE_LPDDR4)
 			freq = lp4_highest_freq;
 		break;
 	case 1:
-		if (DRAM_TYPE == TYPE_LPDDR3)
+		/* if (DRAM_TYPE == TYPE_LPDDR3)
 			freq = 1534;
-		else if ((DRAM_TYPE == TYPE_LPDDR4) ||
+		else */ if ((DRAM_TYPE == TYPE_LPDDR4) ||
 				(DRAM_TYPE == TYPE_LPDDR4X))
 			freq = 2400;
 		break;
 	case 2:
-		if (DRAM_TYPE == TYPE_LPDDR3)
+		/* if (DRAM_TYPE == TYPE_LPDDR3)
 			freq = 1200;
-		else if ((DRAM_TYPE == TYPE_LPDDR4) ||
+		else */ if ((DRAM_TYPE == TYPE_LPDDR4) ||
 				(DRAM_TYPE == TYPE_LPDDR4X))
 			freq = 1534;
 		break;
@@ -875,13 +865,6 @@ static int dram_probe(struct platform_device *pdev)
 #else
 	DRAM_TYPE = TYPE_LPDDR4X;
 #endif
-	if (get_dram_data_rate() == 3600)
-		lp4x_highfreq_3600 = 1;
-	else
-		lp4x_highfreq_3600 = 0;
-
-	dramc_info("lp4x_highfreq_3600 = %d\n", lp4x_highfreq_3600);
-
 	if (!DRAM_TYPE) {
 		dramc_info("dram type error !!\n");
 		return -1;

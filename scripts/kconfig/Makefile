@@ -167,7 +167,9 @@ kxgettext-objs	:= kxgettext.o zconf.tab.o
 
 hostprogs-y := conf kxgettext
 
-clean-files	+= zconf.tab.c zconf.lex.c gconf.glade.h
+targets		+= zconf.lex.c
+clean-files	:= qconf.moc .tmp_qtcheck .tmp_gtkcheck
+clean-files	+= gconf.glade.h
 clean-files     += config.pot linux.pot
 
 # Add environment specific flags

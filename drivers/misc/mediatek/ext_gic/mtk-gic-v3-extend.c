@@ -529,6 +529,7 @@ int mt_irq_dump_cpu(int irq)
 
 void mt_irq_dump_status(int irq)
 {
+#ifdef CONFIG_MTK_ENG_BUILD
 	char *buf = kmalloc(2048, GFP_ATOMIC);
 
 	if (!buf)
@@ -538,6 +539,9 @@ void mt_irq_dump_status(int irq)
 		pr_warn("%s", buf);
 
 	kfree(buf);
+#else
+	(void)0;
+#endif
 }
 EXPORT_SYMBOL(mt_irq_dump_status);
 

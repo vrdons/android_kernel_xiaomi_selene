@@ -917,7 +917,7 @@ static void SCP_sensorHub_init_sensor_state(void)
 }
 
 static void init_sensor_config_cmd(struct ConfigCmd *cmd,
-		int sensor_type)
+		uint8_t sensor_type)
 {
 	uint8_t alt = mSensorState[sensor_type].alt;
 	bool enable = 0;
@@ -1026,7 +1026,8 @@ static int SCP_sensorHub_flush(int handle)
 static int SCP_sensorHub_report_raw_data(struct data_unit_t *data_t)
 {
 	struct SCP_sensorHub_data *obj = obj_data;
-	int err = 0, sensor_type = 0, sensor_id = 0;
+	int err = 0;
+	uint8_t sensor_type = 0, sensor_id = 0;
 	atomic_t *p_flush_count = NULL;
 	bool raw_enable = 0;
 	int64_t raw_enable_time = 0;
@@ -1073,8 +1074,8 @@ static int SCP_sensorHub_report_raw_data(struct data_unit_t *data_t)
 static int SCP_sensorHub_report_alt_data(struct data_unit_t *data_t)
 {
 	struct SCP_sensorHub_data *obj = obj_data;
-	int err = 0, sensor_type = 0, sensor_id = 0, alt_id;
-	uint8_t alt = 0;
+	int err = 0;
+	uint8_t alt = 0, alt_id, sensor_type = 0, sensor_id = 0;
 	atomic_t *p_flush_count = NULL;
 	bool alt_enable = 0;
 	int64_t alt_enable_time = 0;
@@ -1285,7 +1286,7 @@ static int sensor_send_timestamp_to_hub(void)
 	struct SCP_sensorHub_data *obj = obj_data;
 
 	if (READ_ONCE(rtc_compensation_suspend)) {
-		pr_err("rtc_compensation_suspend suspend,drop time sync\n");
+		pr_debug("rtc_compensation_suspend suspend,drop time sync\n");
 		return 0;
 	}
 

@@ -31,6 +31,7 @@
 
 #if defined(CONFIG_SND_SOC_MTK_AUDIO_DSP)
 #include "../audio_dsp/mtk-dsp-common.h"
+#include <adsp_core.h>
 #endif
 #if defined(CONFIG_SND_SOC_MTK_SCP_SMARTPA)
 #include "../scp_spk/mtk-scp-spk-common.h"
@@ -128,9 +129,10 @@ int mt6768_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 	unsigned int rate = runtime->rate;
 	int fs;
 	int ret = 0;
+bool dsp_reset = false;
 
-	dev_info(afe->dev, "%s(), %s cmd %d, irq_id %d\n",
-		 __func__, memif->data->name, cmd, irq_id);
+	dev_dbg(afe->dev, "%s(), %s cmd %d, irq_id %d dsp_reset %d\n",
+		 __func__, memif->data->name, cmd, irq_id, dsp_reset);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -204,12 +206,23 @@ int mt6768_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 				}
 			}
 		}
-#if defined(CONFIG_SND_SOC_MTK_AUDIO_DSP) ||\
-	defined(CONFIG_MTK_VOW_BARGE_IN_SUPPORT)
+#if defined(CONFIG_SND_SOC_MTK_AUDIO_DSP) || defined(CONFIG_MTK_VOW_BARGE_IN_SUPPORT)
+#if defined(CONFIG_MTK_AUDIODSP_SUPPORT)
+	/* only when adsp enable using hw semaphore to set memif */
+		dsp_reset = mtk_audio_get_adsp_reset_status();
+		if (runtime->stop_threshold == ~(0U) && is_adsp_system_running() &&
+		    !dsp_reset)
+			ret = 0;
+		else
+
+
+			ret = mtk_dsp_memif_set_disable(afe, id);
+#elif defined(CONFIG_MTK_VOW_BARGE_IN_SUPPORT)
 		if (runtime->stop_threshold == ~(0U))
 			ret = 0;
 		else
 			ret = mtk_memif_set_disable(afe, id);
+#endif
 #else
 		ret = mtk_memif_set_disable(afe, id);
 #endif
@@ -217,19 +230,17 @@ int mt6768_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 			dev_err(afe->dev, "%s(), error, id %d, memif enable, ret %d\n",
 				__func__, id, ret);
 		}
-
 		/* disable interrupt */
-#if defined(CONFIG_SND_SOC_MTK_AUDIO_DSP) ||\
-	defined(CONFIG_MTK_VOW_BARGE_IN_SUPPORT)
-		if (runtime->stop_threshold != ~(0U))
+#if defined(CONFIG_SND_SOC_MTK_AUDIO_DSP)
+		if (runtime->stop_threshold != ~(0U) || (!is_adsp_system_running()) ||
+		    dsp_reset)
 #endif
 			mtk_regmap_update_bits(afe->regmap,
 				irq_data->irq_en_reg,
 				1 << irq_data->irq_en_shift,
 				0 << irq_data->irq_en_shift);
 		/* and clear pending IRQ */
-#if defined(CONFIG_SND_SOC_MTK_AUDIO_DSP) ||\
-	defined(CONFIG_MTK_VOW_BARGE_IN_SUPPORT)
+#if defined(CONFIG_SND_SOC_MTK_AUDIO_DSP) || defined(CONFIG_MTK_VOW_BARGE_IN_SUPPORT)
 		if (runtime->stop_threshold != ~(0U))
 #endif
 			regmap_write(afe->regmap, irq_data->irq_clr_reg,
@@ -492,7 +503,7 @@ static int mt6768_irq_cnt1_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	unsigned int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -504,7 +515,7 @@ static int mt6768_irq_cnt1_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -542,7 +553,7 @@ static int mt6768_irq_cnt2_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	unsigned int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -554,7 +565,7 @@ static int mt6768_irq_cnt2_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -591,7 +602,7 @@ static int mt6768_deep_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	unsigned int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -603,7 +614,7 @@ static int mt6768_deep_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -640,7 +651,7 @@ static int mt6768_voip_rx_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	unsigned int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -652,7 +663,7 @@ static int mt6768_voip_rx_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -814,7 +825,7 @@ static int mt6768_record_xrun_assert_set(struct snd_kcontrol *kcontrol,
 	struct mt6768_afe_private *afe_priv = afe->platform_priv;
 	int xrun_assert = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
+	dev_dbg(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
 	afe_priv->xrun_assert[MT6768_RECORD_MEMIF] = xrun_assert;
 	return 0;
 }
@@ -839,7 +850,7 @@ static int mt6768_echo_ref_xrun_assert_set(struct snd_kcontrol *kcontrol,
 	struct mt6768_afe_private *afe_priv = afe->platform_priv;
 	int xrun_assert = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
+	dev_dbg(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
 	afe_priv->xrun_assert[MT6768_ECHO_REF_MEMIF] = xrun_assert;
 	return 0;
 }
@@ -1089,7 +1100,7 @@ static int mt6768_mmap_dl_scene_set(struct snd_kcontrol *kcontrol,
 	} else
 		memif->use_mmap_share_mem = 0;
 
-	dev_info(afe->dev, "%s(), state %d, mem %d\n", __func__,
+	dev_dbg(afe->dev, "%s(), state %d, mem %d\n", __func__,
 		afe_priv->mmap_playback_state, memif->use_mmap_share_mem);
 	return 0;
 }
@@ -1127,7 +1138,7 @@ static int mt6768_mmap_ul_scene_set(struct snd_kcontrol *kcontrol,
 	} else
 		memif->use_mmap_share_mem = 0;
 
-	dev_info(afe->dev, "%s(), state %d, mem %d\n", __func__,
+	dev_dbg(afe->dev, "%s(), state %d, mem %d\n", __func__,
 		afe_priv->mmap_playback_state, memif->use_mmap_share_mem);
 	return 0;
 }
@@ -1156,7 +1167,7 @@ static int mt6768_dl_mmap_fd_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = (memif->use_mmap_share_mem == 1) ?
 						mtk_get_mmap_dl_fd() : 0;
-	//dev_info(afe->dev, "%s, fd %d\n", __func__,
+	//dev_dbg(afe->dev, "%s, fd %d\n", __func__,
 	//ucontrol->value.integer.value[0]);
 	return 0;
 }
@@ -1177,7 +1188,7 @@ static int mt6768_ul_mmap_fd_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = (memif->use_mmap_share_mem == 2) ?
 						mtk_get_mmap_ul_fd() : 0;
-	//dev_info(afe->dev, "%s, fd %d\n", __func__,
+	//dev_dbg(afe->dev, "%s, fd %d\n", __func__,
 	//ucontrol->value.integer.value[0]);
 	return 0;
 }
@@ -2133,7 +2144,7 @@ static int mt6768_afe_runtime_suspend(struct device *dev)
 	unsigned int value = 0;
 	int ret;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	if (!afe->regmap)
 		goto skip_regmap;
@@ -2174,7 +2185,7 @@ static int mt6768_afe_runtime_resume(struct device *dev)
 	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	ret = mt6768_afe_enable_clock(afe);
 	if (ret)
@@ -3452,7 +3463,7 @@ static int mt6768_afe_pcm_dev_probe(struct platform_device *pdev)
 	audio_set_dsp_afe(afe);
 #endif
 
-	dev_info(dev, "%s(), return 0\n", __func__);
+	dev_dbg(dev, "%s(), return 0\n", __func__);
 	return 0;
 
 err_dai_component:
@@ -3464,7 +3475,7 @@ err_platform:
 err_pm_disable:
 	pm_runtime_disable(&pdev->dev);
 
-	dev_info(dev, "%s(), return %d\n", __func__, ret);
+	dev_dbg(dev, "%s(), return %d\n", __func__, ret);
 	return ret;
 }
 
@@ -3491,7 +3502,7 @@ static int mt6768_afe_suspend(struct device *dev)
 {
 	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	mt6768_afe_suspend_clock(afe);
 
@@ -3502,7 +3513,7 @@ static int mt6768_afe_resume(struct device *dev)
 {
 	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	mt6768_afe_resume_clock(afe);
 

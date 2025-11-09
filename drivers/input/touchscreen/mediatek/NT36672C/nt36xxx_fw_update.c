@@ -35,10 +35,11 @@
 #define NVT_DUMP_PARTITION_PATH "/data/local/tmp"
 /*BSP.Touch - 2020.11.13 - add for hw_info */
 extern void get_tp_info(void);
+
 static ktime_t start, end;
-const struct firmware *fw_entry;
-static size_t fw_need_write_size;
-static uint8_t *fwbuf;
+const struct firmware *fw_entry = NULL;
+static size_t fw_need_write_size = 0;
+static uint8_t *fwbuf = NULL;
 
 /*BSP.TP - Add for tp detect - 2021.03.10 - Start*/
 extern int is_ft_lcm;
@@ -141,7 +142,7 @@ Description:
 return:
 	n.a.
 *******************************************************/
-static uint32_t partition;
+static uint32_t partition = 0;
 static uint8_t ilm_dlm_num = 2;
 static int32_t nvt_bin_header_parser(const u8 *fwdata, size_t fwsize)
 {
@@ -371,7 +372,7 @@ Description:
 return:
 	n.a.
 *******************************************************/
-loff_t file_offset;
+loff_t file_offset = 0;
 static int32_t nvt_read_ram_and_save_file(uint32_t addr, uint16_t len, char *name)
 {
 	char file[256] = "";
@@ -794,7 +795,10 @@ static void nvt_read_bld_hw_crc(void)
 
 	return;
 }
-/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 start */
+
+#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
+extern bool g_trigger_disp_esd_recovery;
+
 #if NVT_TOUCH_ESD_DISP_RECOVERY
 static int32_t nvt_check_crc_done_ilm_err(void)
 {
@@ -817,11 +821,8 @@ static int32_t nvt_check_crc_done_ilm_err(void)
 }
 
 #endif /* NVT_TOUCH_ESD_DISP_RECOVERY */
+#endif /* CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE */
 
-#ifdef CONFIG_MI_ERRFLAG_ESD_CHECK_ENABLE
-extern bool g_trigger_disp_esd_recovery;
-#endif
-/* Huaqin modify for HQ-144782 by caogaojie at 2021/07/05 end */
 /*******************************************************
 Description:
 	Novatek touchscreen Download_Firmware with HW CRC

@@ -782,33 +782,20 @@ static int _init_resv_mem(struct platform_device *pdev)
 static irqreturn_t mtk_axi_interrupt(int irq, void *dev_instance)
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
-#if AXI_ISR_DEBUG_LOG
-	static DEFINE_RATELIMIT_STATE(_rs, 2 * HZ, 1);
-#endif
 
 	prGlueInfo = (struct GLUE_INFO *)dev_instance;
 	if (!prGlueInfo) {
-#if AXI_ISR_DEBUG_LOG
-		DBGLOG(HAL, INFO, "No glue info in mtk_axi_interrupt()\n");
-#endif
 		return IRQ_NONE;
 	}
 
 	GLUE_INC_REF_CNT(prGlueInfo->prAdapter->rHifStats.u4HwIsrCount);
 	halDisableInterrupt(prGlueInfo->prAdapter);
 
-	if (test_bit(GLUE_FLAG_HALT_BIT, &prGlueInfo->ulFlag)) {
-#if AXI_ISR_DEBUG_LOG
-		DBGLOG(HAL, INFO, "GLUE_FLAG_HALT skip INT\n");
-#endif
+	if (prGlueInfo->ulFlag & GLUE_FLAG_HALT) {
 		return IRQ_NONE;
 	}
 
 	kalSetIntEvent(prGlueInfo);
-#if AXI_ISR_DEBUG_LOG
-	if (__ratelimit(&_rs))
-		LOG_FUNC("In HIF ISR.\n");
-#endif
 
 	return IRQ_HANDLED;
 }

@@ -1844,7 +1844,10 @@ static bool check_new_pcp(struct page *page)
 #else
 static bool check_pcp_refill(struct page *page)
 {
-	return check_new_page(page);
+	if (debug_pagealloc_enabled())
+		return check_new_page(page);
+	else
+		return false;
 }
 static bool check_new_pcp(struct page *page)
 {
@@ -1905,7 +1908,7 @@ static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags
  * Go through the free lists for the given migratetype and remove
  * the smallest available page from the freelists
  */
-static inline
+static __always_inline
 struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 						int migratetype)
 {
@@ -1954,7 +1957,7 @@ static int fallbacks[MIGRATE_TYPES][4] = {
 };
 
 #ifdef CONFIG_CMA
-static struct page *__rmqueue_cma_fallback(struct zone *zone,
+static __always_inline struct page *__rmqueue_cma_fallback(struct zone *zone,
 					unsigned int order)
 {
 	return __rmqueue_smallest(zone, order, MIGRATE_CMA);
@@ -2335,7 +2338,7 @@ static bool unreserve_highatomic_pageblock(const struct alloc_context *ac,
  * deviation from the rest of this file, to make the for loop
  * condition simpler.
  */
-static inline bool
+static __always_inline bool
 __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 {
 	struct free_area *area;
@@ -2407,8 +2410,8 @@ do_steal:
  * Do the hard work of removing an element from the buddy allocator.
  * Call me with the zone->lock already held.
  */
-static struct page *__rmqueue(struct zone *zone, unsigned int order,
-				int migratetype)
+static __always_inline struct page *
+__rmqueue(struct zone *zone, unsigned int order, int migratetype)
 {
 	struct page *page;
 
@@ -3552,8 +3555,10 @@ should_compact_retry(struct alloc_context *ac, int order, int alloc_flags,
 	int max_retries = MAX_COMPACT_RETRIES;
 	int min_priority;
 	bool ret = false;
+#if !defined(CONFIG_DISABLE_OOM_KILLER)
 	int retries = *compaction_retries;
 	enum compact_priority priority = *compact_priority;
+#endif
 
 	if (!order)
 		return false;
@@ -3617,7 +3622,9 @@ check_priority:
 		ret = true;
 	}
 out:
+#if !defined(CONFIG_DISABLE_OOM_KILLER)
 	trace_compact_retry(order, priority, compact_result, retries, max_retries, ret);
+#endif
 	return ret;
 }
 #else
@@ -3940,8 +3947,10 @@ should_reclaim_retry(gfp_t gfp_mask, unsigned order,
 		 */
 		wmark = __zone_watermark_ok(zone, order, min_wmark,
 				ac_classzone_idx(ac), alloc_flags, available);
+#if !defined(CONFIG_DISABLE_OOM_KILLER)
 		trace_reclaim_retry_zone(z, order, reclaimable,
 				available, min_wmark, *no_progress_loops, wmark);
+#endif
 		if (wmark) {
 			/*
 			 * If we didn't make any progress and have a lot of

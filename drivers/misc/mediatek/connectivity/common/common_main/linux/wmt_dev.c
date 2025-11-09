@@ -277,7 +277,7 @@ static INT32 wmt_fb_notifier_callback(struct notifier_block *self, ULONG event, 
 		atomic_set(&g_es_lr_flag_for_quick_sleep, 0);
 		atomic_set(&g_es_lr_flag_for_lpbk_onoff, 1);
 		atomic_set(&g_es_lr_flag_for_blank, 1);
-		WMT_WARN_FUNC("@@@@@@@@@@wmt enter UNBLANK @@@@@@@@@@@@@@\n");
+		WMT_DBG_FUNC("wmt enter UNBLANK\n");
 		if (hif_info == 0) {
 			atomic_set(&g_late_pwr_on_for_blank, 1);
 			break;
@@ -288,7 +288,7 @@ static INT32 wmt_fb_notifier_callback(struct notifier_block *self, ULONG event, 
 		atomic_set(&g_es_lr_flag_for_quick_sleep, 1);
 		atomic_set(&g_es_lr_flag_for_lpbk_onoff, 0);
 		atomic_set(&g_es_lr_flag_for_blank, 0);
-		WMT_WARN_FUNC("@@@@@@@@@@wmt enter early POWERDOWN @@@@@@@@@@@@@@\n");
+		WMT_DBG_FUNC("wmt enter early POWERDOWN\n");
 		schedule_work(&gPwrOnOffWork);
 		break;
 	default:
@@ -549,11 +549,7 @@ static UINT32 wmt_dev_tra_poll(VOID)
 	else
 		poll_during_time = 0xffffffff;
 
-	WMT_DBG_FUNC("**jiffies_to_mesecs(0xffffffff) = %d\n", jiffies_to_msecs(0xffffffff));
-
 	if (jiffies_to_msecs(poll_during_time) < TIME_THRESHOLD_TO_TEMP_QUERY) {
-		WMT_DBG_FUNC("**poll_during_time = %d < %d, not to query\n",
-			     jiffies_to_msecs(poll_during_time), TIME_THRESHOLD_TO_TEMP_QUERY);
 		return -1;
 	}
 
@@ -577,8 +573,6 @@ static UINT32 wmt_dev_tra_poll(VOID)
 	}
 
 	if (during_count < COUNT_THRESHOLD_TO_TEMP_QUERY) {
-		WMT_DBG_FUNC("**during_count = %lu < %d, not to query\n", during_count,
-				COUNT_THRESHOLD_TO_TEMP_QUERY);
 		return -2;
 	}
 
@@ -589,9 +583,6 @@ static UINT32 wmt_dev_tra_poll(VOID)
 		(*mtk_wcn_wlan_bus_tx_cnt_clr)();
 	else
 		WMT_ERR_FUNC("WMT-DEV:error chip type(%d)\n", chip_type);
-	WMT_INFO_FUNC("**poll_during_time = %d > %d, during_count = %d > %d, query\n",
-		      jiffies_to_msecs(poll_during_time), TIME_THRESHOLD_TO_TEMP_QUERY,
-		      jiffies_to_msecs(during_count), COUNT_THRESHOLD_TO_TEMP_QUERY);
 
 	return 0;
 }
@@ -714,13 +705,6 @@ LONG wmt_dev_tm_temp_query(VOID)
 			index = s_idx_temp_table;
 		}
 		osal_unlock_unsleepable_lock(&g_temp_query_spinlock);
-
-		if (index == -1) {
-			WMT_INFO_FUNC("[Thermal] current_temp = 0x%x\n", (current_temp & 0xFF));
-		} else {
-			WMT_ERR_FUNC("Temperature(0x%x) update failed due to modified idx_temp_table(%d, %d)",
-				(current_temp & 0xFF), idx_temp_table, index);
-		}
 	} else {
 		/* Only update temperature if our index hasn't been modified by the concurrent thread */
 		osal_lock_unsleepable_lock(&g_temp_query_spinlock);
@@ -735,14 +719,11 @@ LONG wmt_dev_tm_temp_query(VOID)
 			index = s_idx_temp_table;
 		}
 		osal_unlock_unsleepable_lock(&g_temp_query_spinlock);
-		if (index != -1) {
-			WMT_DBG_FUNC("Use last valid temperature (0x%x) due to modified idx_temp_table(%d, %d)",
-				(current_temp & 0xFF), idx_temp_table, index);
-		}
 	}
 
 	return_temp = ((current_temp & 0x80) == 0x0) ? current_temp : (-1) * (current_temp & 0x7f);
 
+#if 0
 	/*  */
 	/* Dump information */
 	/*  */
@@ -757,6 +738,7 @@ LONG wmt_dev_tm_temp_query(VOID)
 			s_temp_table[0], s_temp_table[1], s_temp_table[2]);
 		osal_unlock_unsleepable_lock(&g_temp_query_spinlock);
 	}
+#endif
 
 	if (return_temp > MAX_TEMP) {
 		return_temp = MAX_TEMP;

@@ -66,12 +66,17 @@ static int I2C_SET_FOR_BACKLIGHT  = 350;
  ***************************************************************************/
 #undef pr_fmt
 #define pr_fmt(fmt) KBUILD_MODNAME " %s(%d) :" fmt, __func__, __LINE__
+#ifdef CONFIG_MTK_ENG_BUILD
 static int debug_enable_led = 1;
 #define LEDS_DRV_DEBUG(format, args...) do { \
 	if (debug_enable_led) {	\
 		pr_info("[LED]"format, ##args);\
 	} \
 } while (0)
+#else
+static int debug_enable_led = 0;
+#define LEDS_DRV_DEBUG(format, args...) ((void)0)
+#endif
 
 /******************************************************************************
  * for DISP backlight High resolution

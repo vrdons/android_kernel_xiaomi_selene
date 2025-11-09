@@ -531,6 +531,7 @@ int mtk_vdec_put_fb(struct mtk_vcodec_ctx *ctx, int type)
 			dst_buf_info = container_of(dst_vb2_v4l2,
 				struct mtk_video_dec_buf, vb);
 
+			dst_buf_info->used = false;
 			dst_buf_info->vb.vb2_buf.timestamp = 0;
 			memset(&dst_buf_info->vb.timecode, 0, sizeof(struct v4l2_timecode));
 			dst_vb2_v4l2->flags |= V4L2_BUF_FLAG_LAST;
@@ -2530,6 +2531,7 @@ static void vb2ops_vdec_stop_streaming(struct vb2_queue *q)
 
 	ctx->input_max_ts = 0;
 
+	ctx->dec_flush_buf->lastframe = NON_EOS;
 	if (q->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE) {
 		if (ctx->state >= MTK_STATE_HEADER) {
 			src_buf = v4l2_m2m_next_src_buf(ctx->m2m_ctx);

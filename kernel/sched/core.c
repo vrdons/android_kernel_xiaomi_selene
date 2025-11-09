@@ -3042,7 +3042,7 @@ void scheduler_ipi(void)
 	 */
 	if (unlikely(got_nohz_idle_kick()) && !cpu_isolated(cpu)) {
 		this_rq()->idle_balance = 1;
-		raise_softirq_irqoff(SCHED_SOFTIRQ);
+		__raise_softirq_irqoff(SCHED_SOFTIRQ);
 	}
 	irq_exit();
 }
@@ -4498,7 +4498,6 @@ static noinline void __schedule_bug(struct task_struct *prev)
 {
 	/* Save this before calling printk(), since that will clobber it */
 	unsigned long preempt_disable_ip = get_preempt_disable_ip(current);
-	int i = 0;
 	if (oops_in_progress)
 		return;
 
@@ -7048,6 +7047,14 @@ static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
 		if (rq->nr_running == 1)
 			break;
 
+		/*
+		 * put_prev_task() and pick_next_task() sched
+		 * class method both need to have an up-to-date
+		 * value of rq->clock[_task],
+		 * this value may be changed, so must update again.
+		 */
+		if (!(rq->clock_update_flags & RQCF_UPDATED))
+			update_rq_clock(rq);
 		/*
 		 * pick_next_task() assumes pinned rq->lock:
 		 */

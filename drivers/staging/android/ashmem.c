@@ -882,16 +882,16 @@ static int __init ashmem_init(void)
 
 	ashmem_area_cachep = kmem_cache_create("ashmem_area_cache",
 					       sizeof(struct ashmem_area),
-					       0, 0, NULL);
-	if (!ashmem_area_cachep) {
+					       0, SLAB_HWCACHE_ALIGN, NULL);
+	if (unlikely(!ashmem_area_cachep)) {
 		pr_err("failed to create slab cache\n");
 		goto out;
 	}
 
 	ashmem_range_cachep = kmem_cache_create("ashmem_range_cache",
 						sizeof(struct ashmem_range),
-						0, SLAB_RECLAIM_ACCOUNT, NULL);
-	if (!ashmem_range_cachep) {
+						0, SLAB_RECLAIM_ACCOUNT | SLAB_HWCACHE_ALIGN, NULL);
+	if (unlikely(!ashmem_range_cachep)) {
 		pr_err("failed to create slab cache\n");
 		goto out_free1;
 	}
