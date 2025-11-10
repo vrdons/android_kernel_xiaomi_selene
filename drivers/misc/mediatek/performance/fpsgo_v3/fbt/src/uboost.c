@@ -26,6 +26,7 @@
 #include "sched/sched.h"
 
 static unsigned long long last_vsync_ts;
+static struct workqueue_struct *wq_uboost;
 
 static void uboost_get_runtime(pid_t tid, u64 *runtime)
 {
@@ -175,7 +176,10 @@ static enum hrtimer_restart uboost_tfn(struct hrtimer *timer)
 	struct uboost *boost;
 
 	boost = container_of(timer, struct uboost, timer);
-	schedule_work(&boost->work);
+	if (wq_uboost)
+		queue_work(wq_uboost, &boost->work);
+	else
+		schedule_work(&boost->work);
 	return HRTIMER_NORESTART;
 }
 
@@ -193,6 +197,7 @@ void fpsgo_base2uboost_init(struct render_info *obj)
 
 	if (!obj)
 		return;
+	wq_uboost = alloc_workqueue("fbt_cpu", WQ_MEM_RECLAIM | WQ_UNBOUND, 0);
 
 	boost = &(obj->uboost_info);
 
@@ -214,4 +219,3 @@ int __exit fpsgo_uboost_exit(void)
 {
 	return 0;
 }
-
