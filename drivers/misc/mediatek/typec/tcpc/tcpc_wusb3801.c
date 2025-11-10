@@ -874,7 +874,7 @@ static int wusb3801_tcpcdev_init(struct wusb3801_chip *chip, struct device *dev)
 	chip->tcpc->typec_attach_old = TYPEC_UNATTACHED;
     chip->tcpc->typec_attach_new = TYPEC_UNATTACHED;
     //chip->tcpc->typec_role = TYPEC_ROLE_UNKNOWN;
-	schedule_delayed_work(
+    queue_delayed_work(system_power_efficient_wq,
 						&chip->first_check_typec_work, msecs_to_jiffies(3000));
 	return 0;
 }
