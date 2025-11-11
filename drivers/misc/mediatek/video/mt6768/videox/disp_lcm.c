@@ -34,6 +34,8 @@
 /* support dfps num 2 60/90 */
 #define DFPS_LEVEL 2
 #endif
+#define BRIGHTNESS_MIN 2
+
 int _lcm_count(void)
 {
 	return lcm_count;
@@ -1523,6 +1525,12 @@ int disp_lcm_set_backlight(struct disp_lcm_handle *plcm,
 
 	lcm_drv = plcm->drv;
 	if (lcm_drv->set_backlight_cmdq) {
+#ifdef CONFIG_TARGET_PRODUCT_SELENECOMMON
+	if(level < BRIGHTNESS_MIN) {
+		level = BRIGHTNESS_MIN;
+	}
+#endif
+
 		lcm_drv->set_backlight_cmdq(handle, level);
 	} else {
 		DISPERR("FATAL ERROR, lcm_drv->set_backlight is null\n");
@@ -1957,4 +1965,3 @@ done:
 
 /*-------------------DynFPS end-----------------------------*/
 #endif
-
