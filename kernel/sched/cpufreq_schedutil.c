@@ -353,7 +353,6 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 #ifdef CONFIG_MTK_TINYSYS_SSPM_SUPPORT
 	int cid;
 #endif
-	unsigned int cached_freq = sg_policy->cached_raw_freq;
 
 	sugov_set_iowait_boost(sg_cpu, time, flags);
 	sg_cpu->last_update = time;
@@ -386,7 +385,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 			next_f = sg_policy->next_freq;
 
 			/* Reset cached freq as next_freq has changed */
-			sg_policy->cached_raw_freq = cached_freq;
+			sg_policy->cached_raw_freq = 0;
 		}
 	}
 
@@ -725,7 +724,7 @@ static inline void sugov_policy_free(struct sugov_policy *sg_policy)
 static int sugov_kthread_create(struct sugov_policy *sg_policy)
 {
 	struct task_struct *thread;
-	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO - 1 };
+	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
 	struct cpufreq_policy *policy = sg_policy->policy;
 	int ret;
 

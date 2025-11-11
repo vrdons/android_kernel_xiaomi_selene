@@ -15,6 +15,8 @@
 # Makefile for misc devices that really don't fit anywhere else.
 #
 
+ccflags-y += -I$(srctree)/drivers/input/touchscreen/mediatek/NT36672C/
+
 obj-y += dsi_panel_k19a_43_02_0b_dsc_vdo.o
 
 # Huaqin add for HQ-142518 by feiwen at 2021/06/24 start

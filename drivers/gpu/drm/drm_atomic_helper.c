@@ -1299,7 +1299,7 @@ void drm_atomic_helper_wait_for_flip_done(struct drm_device *dev,
 		if (!commit)
 			continue;
 
-		ret = wait_for_completion_timeout(&commit->flip_done, 10 * HZ);
+		ret = wait_for_common(&commit->flip_done, 10 * HZ, TASK_IDLE);
 		if (ret == 0)
 			DRM_ERROR("[CRTC:%d:%s] flip_done timed out\n",
 				  crtc->base.id, crtc->name);
@@ -1851,16 +1851,14 @@ void drm_atomic_helper_wait_for_dependencies(struct drm_atomic_state *old_state)
 		if (!commit)
 			continue;
 
-		ret = wait_for_completion_timeout(&commit->hw_done,
-						  10*HZ);
+		ret = wait_for_common(&commit->hw_done, 10*HZ, TASK_IDLE);
 		if (ret == 0)
 			DRM_ERROR("[CRTC:%d:%s] hw_done timed out\n",
 				  crtc->base.id, crtc->name);
 
 		/* Currently no support for overwriting flips, hence
 		 * stall for previous one to execute completely. */
-		ret = wait_for_completion_timeout(&commit->flip_done,
-						  10*HZ);
+		ret = wait_for_common(&commit->flip_done, 10*HZ, TASK_IDLE);
 		if (ret == 0)
 			DRM_ERROR("[CRTC:%d:%s] flip_done timed out\n",
 				  crtc->base.id, crtc->name);
@@ -1940,8 +1938,7 @@ void drm_atomic_helper_commit_cleanup_done(struct drm_atomic_state *old_state)
 		/* We must wait for the vblank event to signal our completion
 		 * before releasing our reference, since the vblank work does
 		 * not hold a reference of its own. */
-		ret = wait_for_completion_timeout(&commit->flip_done,
-						  10*HZ);
+		ret = wait_for_common(&commit->flip_done, 10*HZ, TASK_IDLE);
 		if (ret == 0)
 			DRM_ERROR("[CRTC:%d:%s] flip_done timed out\n",
 				  crtc->base.id, crtc->name);
