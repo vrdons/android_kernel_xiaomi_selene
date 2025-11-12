@@ -26,9 +26,6 @@
 #include <linux/string.h>
 #include <linux/topology.h>
 #include "mtk_ppm_internal.h"
-#ifdef CONFIG_MTK_PERF_TRACKER
-#include <trace/events/mtk_events.h>
-#endif
 #include <linux/of.h>
 
 /*==============================================================*/
@@ -652,25 +649,10 @@ int mt_ppm_main(void)
 	list_for_each_entry(pos, &ppm_main_info.policy_list, link) {
 		if ((pos->is_activated)
 			&& pos->update_limit_cb) {
-/*  For performance removing CONFIG_MTK_SCHED_TRACERS
-			int idx;
-*/
 			ppm_lock(&pos->lock);
 			policy_mask |= 1 << pos->policy;
 			pos->update_limit_cb();
 			pos->is_limit_updated = true;
-/*  For performance removing CONFIG_MTK_SCHED_TRACERS
-			for (idx = 0; idx < pos->req.cluster_num; idx++) {
-#ifdef CONFIG_MTK_PERF_TRACKER
-				trace_ppm_user_setting(
-					pos->policy,
-					idx,
-					pos->req.limit[idx].min_cpufreq_idx,
-					pos->req.limit[idx].max_cpufreq_idx
-				);
-#endif
-			}
-*/
 			ppm_unlock(&pos->lock);
 		}
 	}
