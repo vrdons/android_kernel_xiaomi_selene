@@ -687,7 +687,7 @@ void fpsgo_get_fps(int *pid, int *fps)
 
 	fpsgo_ctrl2fstb_get_fps(pid, fps);
 
-	FPSGO_LOGE("[FPSGO_CTRL] get_fps %d %d\n", *pid, *fps);
+	FPSGO_LOGI("[FPSGO_CTRL] get_fps %d %d\n", *pid, *fps);
 
 	//return fps;
 }
@@ -882,7 +882,7 @@ static int __init fpsgo_init(void)
 	fpsgo_composer_init();
 	fpsgo_uboost_init();
 
-	fpsgo_switch_enable(1);
+	//fpsgo_switch_enable(1);
 
 #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
 	cpufreq_notifier_fp = fpsgo_notify_cpufreq;

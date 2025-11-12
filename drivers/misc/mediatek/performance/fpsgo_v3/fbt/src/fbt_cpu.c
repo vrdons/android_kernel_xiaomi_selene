@@ -3538,48 +3538,6 @@ void fpsgo_ctrl2fbt_vsync(unsigned long long ts)
 
 	vsync_duration = nsec_to_usec(ts - vsync_time);
 
-	if (_gdfrc_fps_limit == 60) {
-		vsync_duration_us_90 = 0;
-		vsync_duration_us_120 = 0;
-		if (vsync_duration_us_60 == 0)
-			vsync_duration_us_60 = 1000000 / 60;
-		else {
-			temp_duration = vsync_duration * 3 + vsync_duration_us_60 * 7;
-			do_div(temp_duration, 10);
-			vsync_duration_us_60 =
-				vsync_duration < 1000000 / 60 * 15 / 10 &&
-				vsync_duration > 1000000 / 60 / 2 ?
-				temp_duration : vsync_duration_us_60;
-		}
-
-	} else if (_gdfrc_fps_limit == 90) {
-		vsync_duration_us_60 = 0;
-		vsync_duration_us_120 = 0;
-		if (vsync_duration_us_90 == 0)
-			vsync_duration_us_90 = 1000000 / 90;
-		else {
-			temp_duration = vsync_duration * 3 + vsync_duration_us_90 * 7;
-			do_div(temp_duration, 10);
-			vsync_duration_us_90 =
-				vsync_duration < 1000000 / 90 * 15 / 10 &&
-				vsync_duration > 1000000 / 90 / 2 ?
-				temp_duration : vsync_duration_us_90;
-		}
-	} else if (_gdfrc_fps_limit == 120) {
-		vsync_duration_us_60 = 0;
-		vsync_duration_us_90 = 0;
-		if (vsync_duration_us_120 == 0)
-			vsync_duration_us_120 = 1000000 / 120;
-		else {
-			temp_duration = vsync_duration * 3 + vsync_duration_us_120 * 7;
-			do_div(temp_duration, 10);
-			vsync_duration_us_120 =
-				vsync_duration < 1000000 / 120 * 15 / 10 &&
-				vsync_duration > 1000000 / 120 / 2 ?
-				temp_duration : vsync_duration_us_120;
-		}
-	}
-
 	vsync_time = ts;
 	xgf_trace(
 		"vsync_time=%llu, vsync_duration=%llu, vsync_duration_60=%llu, vsync_duration_90=%llu, vsync_duration_120=%llu",
@@ -4126,7 +4084,7 @@ static void fbt_update_pwd_tbl(void)
 			cpu_dvfs[cluster].capacity_ratio[opp] = temp;
 		}
 
-		if (cpu_dvfs[cluster].capacity_ratio[0] > max_cap) {
+		if (cpu_dvfs[cluster].capacity_ratio[0] >= max_cap) {
 			max_cap = cpu_dvfs[cluster].capacity_ratio[0];
 			max_cap_cluster = cluster;
 		}
