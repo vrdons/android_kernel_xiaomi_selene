@@ -133,10 +133,15 @@ unsigned int force_disable;
 #endif
 
 void parse_time_log_content(unsigned int time_stamp_l_log,
-	unsigned int time_stamp_h_log, int idx)
+	unsigned int time_stamp_h_log, unsigned int idx)
 {
 	if (idx < 0)
 		return;
+	if (idx > MAX_LOG_FETCH) {
+		tag_pr_notice
+		("Error: %s wrong idx %d\n", __func__, idx);
+		idx = 0;
+	}
 
 	if (time_stamp_h_log == 0 && time_stamp_l_log == 0)
 		log_box_parsed[idx].time_stamp = 0;
@@ -146,7 +151,7 @@ void parse_time_log_content(unsigned int time_stamp_l_log,
 		(unsigned long long)(time_stamp_l_log);
 }
 
-void parse_log_content(unsigned int *local_buf, int idx)
+void parse_log_content(unsigned int *local_buf, unsigned int idx)
 {
 	struct cpu_dvfs_log *log_box = (struct cpu_dvfs_log *)local_buf;
 	struct mt_cpu_dvfs *p;
@@ -154,6 +159,11 @@ void parse_log_content(unsigned int *local_buf, int idx)
 
 	if (idx < 0)
 		return;
+	if (idx > MAX_LOG_FETCH) {
+		tag_pr_notice
+		("Error: %s wrong idx %d\n", __func__, idx);
+		idx = 0;
+	}
 
 	for_each_cpu_dvfs(i, p) {
 		log_box_parsed[idx].cluster_opp_cfg[i].limit_idx =
@@ -190,7 +200,7 @@ int Ripi_cpu_dvfs_thread(void *data)
 
 	int previous_limit = -1;
 	int previous_base = -1;
-	int num_log;
+	unsigned int num_log;
 	unsigned int buf[ENTRY_EACH_LOG] = {0};
 	unsigned int bk_log_offs;
 	unsigned int buf_freq;
@@ -287,6 +297,9 @@ int Ripi_cpu_dvfs_thread(void *data)
 			parse_log_content(buf, num_log);
 			num_log++;
 		}
+
+		if (num_log > MAX_LOG_FETCH)
+			num_log = MAX_LOG_FETCH;
 
 		cpufreq_lock(flags);
 		for_each_cpu_dvfs_only(i, p) {
@@ -1704,7 +1717,7 @@ void update_pvt_tbl_by_doe(void)
 void cpuhvfs_pvt_tbl_create(void)
 {
 	int i;
-	unsigned int lv = _mt_cpufreq_get_cpu_level();
+	unsigned int lv = CPU_LEVEL_0;
 #ifdef IMAX_ENABLE
 	unsigned int imax_state = IMAX_INIT_STATE;
 #ifdef ENABLE_DOE
@@ -1716,6 +1729,7 @@ void cpuhvfs_pvt_tbl_create(void)
 	int j;
 #endif
 
+	lv = _mt_cpufreq_get_cpu_level();
 	recordRef = ioremap_nocache(DBG_REPO_TBL_S, PVT_TBL_SIZE);
 	tag_pr_info("DVFS - @(Record)%s----->(%p)\n", __func__, recordRef);
 	memset_io((u8 *)recordRef, 0x00, PVT_TBL_SIZE);

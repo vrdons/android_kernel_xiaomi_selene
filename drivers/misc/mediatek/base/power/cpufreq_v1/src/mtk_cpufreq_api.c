@@ -55,15 +55,18 @@ int mt_cpufreq_set_by_wfi_load_cluster(unsigned int cluster_id,
 #endif /* CONFIG_MTK_CM_MGR */
 #if defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6877) \
 	|| defined(CONFIG_MACH_MT6781)
-	for_each_cpu(cpu, policy->cpus)
-		trace_cpu_frequency(freq, cpu);
+	if(policy != NULL) {
+		for_each_cpu(cpu, policy->cpus)
+			trace_cpu_frequency(freq, cpu);
+	}
 #endif
 	cpuhvfs_set_dvfs(id, freq);
 #if defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6877) \
 	|| defined(CONFIG_MACH_MT6781)
-	policy->cur = freq;
-	arch_set_freq_scale(policy->cpus, freq, policy->cpuinfo.max_freq);
+	if(policy != NULL)
+		policy->cur = freq;
 #endif
+    arch_set_freq_scale(policy->cpus, freq, policy->cpuinfo.max_freq);
 #endif
 
 	return 0;
@@ -509,4 +512,3 @@ int mt_cpufreq_update_legacy_volt(enum mt_cpu_dvfs_id id,
 }
 EXPORT_SYMBOL(mt_cpufreq_update_legacy_volt);
 #endif
-
