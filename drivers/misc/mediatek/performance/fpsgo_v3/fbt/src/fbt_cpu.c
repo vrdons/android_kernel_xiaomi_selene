@@ -376,6 +376,8 @@ static int _gdfrc_fps_limit;
 
 static struct fbt_sjerk sjerk;
 
+static struct workqueue_struct *wq_jerk;
+
 static int nsec_to_100usec(unsigned long long nsec)
 {
 	unsigned long long husec;
@@ -1248,7 +1250,7 @@ static void fbt_set_min_cap_locked(struct render_info *thr, int min_cap,
 			}
 		}
 
-		if (fbt_is_light_loading(fl->loading)) {
+		if (fbt_is_light_loading(fl->loading) && bhr_opp != (NR_FREQ_CPU - 1)) {
 			fbt_set_per_task_min_cap(fl->pid,
 				(!loading_policy) ? 0
 				: min_cap * loading_policy / 100);
@@ -1910,7 +1912,10 @@ static enum hrtimer_restart fbt_jerk_tfn(struct hrtimer *timer)
 	struct fbt_jerk *jerk;
 
 	jerk = container_of(timer, struct fbt_jerk, timer);
-	schedule_work(&jerk->work);
+	if (wq_jerk)
+		queue_work(wq_jerk, &jerk->work);
+	else
+		schedule_work(&jerk->work);
 	return HRTIMER_NORESTART;
 }
 
@@ -5218,6 +5223,7 @@ int __init fbt_cpu_init(void)
 	INIT_LIST_HEAD(&loading_list);
 	INIT_LIST_HEAD(&blc_list);
 
+	wq_jerk = alloc_workqueue("fbt_cpu", WQ_MEM_RECLAIM | WQ_UNBOUND, 0);
 	/* sub-module initialization */
 	init_xgf();
 	minitop_init();
