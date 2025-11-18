@@ -16,7 +16,9 @@
 #include <linux/uaccess.h> /* copy_from/to_user() */
 
 #include <sspm_ipi.h>
+#ifdef CONFIG_MTK_SCHED_TRACERS
 #include <trace/events/mtk_events.h>
+#endif
 
 #include <mtk_sspm.h>
 #include <mtk_spm_internal.h>
@@ -207,7 +209,9 @@ void sspm_ipi_lock_spm_scenario(int start, int id, int opt, const char *name)
 	else
 		atomic_dec(&ipi_lock_cnt);
 
+#ifdef CONFIG_MTK_SCHED_TRACERS
 	/* FTRACE tag */
-	// trace_sspm_ipi(start, id, opt);
+	trace_sspm_ipi(start, id, opt);
+#endif
 }
 

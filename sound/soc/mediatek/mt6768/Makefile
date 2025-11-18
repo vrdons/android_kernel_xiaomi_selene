@@ -21,7 +21,6 @@ obj-$(CONFIG_SND_SOC_MT6768_MT6358) += mt6768-mt6358.o
 # MENU Governor Predict(low power)
 ifeq ($(CONFIG_MTK_ACAO_SUPPORT),y)
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/mcdi/include/
-ccflags-y += -I$(srctree)/drivers/misc/mediatek/adsp/common
 endif
 
 # spm
